@@ -8,7 +8,7 @@ import { ListItem } from 'react-native-elements'
 import auth from '@react-native-firebase/auth';
 import { showMessage, hideMessage } from "react-native-flash-message";
 import { useFocusEffect } from '@react-navigation/native';
-import RNSchedule from '../rnschedule/src';
+//import RNSchedule from '../rnschedule/src';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import database from '@react-native-firebase/database';
  
@@ -94,10 +94,13 @@ function RendezVousScreen({navigation, route}){
 
 
   return(
+    <>{/*
       <RNSchedule
         dataArray={data}
         onEventPress={(appt) => console.log(appt)}
       />
+      */}
+    </>
   )
 }
 

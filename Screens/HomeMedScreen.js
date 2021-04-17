@@ -8,6 +8,9 @@ import { Text, Input, Button, CheckBox } from 'react-native-elements';
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 import {AuthService, x} from '../video/services';
+import { PermissionsAndroid } from 'react-native';
+import {fcmService} from '../FCMService';
+import {localNotificationService} from '../LocalNotificationService';
 
 import Init from '../video/Init';
 
@@ -49,6 +52,7 @@ export default function HomeMedScreen(props){
 			setUsers(tab);
 		});
 	      let users1 = database().ref('users/'+user.uid);
+	      let users2 = database().ref('users/'+user.uid);
 	      users1.once('value', snatchot =>{
 	        let callId = snatchot.val().callId;
 	        AuthService.check({id: callId, email: user.email, password: user.email, login: user.email, idU: user.uid});
@@ -68,6 +72,30 @@ export default function HomeMedScreen(props){
 					setPat(xc);
 				}
 			});
+	      const onRegister = async (token)  =>{
+	        console.log('[App] onRegister: ', token);
+	        users2.update({token: token});
+	      }
+	      const onNotification = async (notify) => {
+	        console.log('[App] onNotification: ', notify);
+	        const options = {
+	          sound: 'default',
+	          playSound: true,
+	        };
+	        await localNotificationService.showNotification(
+	          0,
+	          notify.title,
+	          notify.body,
+	          notify,
+	          options,
+	        );
+	      }
+	      const onOpenNotification = (notify) => {
+	        console.log('[App] onOpenNotification: ', notify);
+	      }
+	      await fcmService.registerAppWithFCM();
+	      await fcmService.register(onRegister, onNotification, onOpenNotification);
+	      await localNotificationService.configure(onOpenNotification);
 	    })(); 
 	  }, []);
 	return(

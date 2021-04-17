@@ -74,6 +74,13 @@ export default class ToolBar extends Component {
       return {isAudioMuted: mute};
     });
   };
+  muteUnmuteVideo = () => {
+    this.setState(prevState => {
+      const mute = !prevState.isVideoMuted;
+      CallService.setMuteVideoState(mute);
+      return {isVideoMuted: mute};
+    });
+  };
 
   _renderCallStartStopButton = isCallInProgress => {
     const style = isCallInProgress ? styles.buttonCallEnd : styles.buttonCall;
@@ -97,6 +104,18 @@ export default class ToolBar extends Component {
       <TouchableOpacity
         style={[styles.buttonContainer, styles.buttonMute]}
         onPress={this.muteUnmuteAudio}>
+        <MaterialIcon name={type} size={32} color="white" />
+      </TouchableOpacity>
+    );
+  };
+_renderMuteVideoButton = () => {
+    const {isVideoMuted} = this.state;
+    const type = isVideoMuted ? 'videocam-off' : 'videocam';
+
+    return (
+      <TouchableOpacity
+        style={[styles.buttonContainer, styles.buttonMute]}
+        onPress={this.muteUnmuteVideo}>
         <MaterialIcon name={type} size={32} color="white" />
       </TouchableOpacity>
     );
@@ -125,6 +144,9 @@ export default class ToolBar extends Component {
       <SafeAreaView style={styles.container}>
         <View style={styles.toolBarItem}>
           {isActiveCall && this._renderMuteButton()}
+        </View>
+        <View style={styles.toolBarItem}>
+          {isActiveCall && this._renderMuteVideoButton()}
         </View>
         <View style={styles.toolBarItem}>
           {this._renderCallStartStopButton(isCallInProgress)}

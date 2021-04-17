@@ -13,6 +13,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Neomorph } from 'react-native-neomorph-shadows';
 import { Shadow } from 'react-native-neomorph-shadows';
 import {AuthService} from '../video/services'; 
+
+import { PermissionsAndroid } from 'react-native';
+import {fcmService} from '../FCMService';
+import {localNotificationService} from '../LocalNotificationService';
 import {users} from '../video/config';
 import Init from '../video/Init';
 
@@ -112,16 +116,42 @@ function _renderItem({item,index}){
 
 
 export default function HomeScreen(props){
-    //const [ca, setCal] = useState(null);
+
   useEffect(() => {
     (async()  =>{ 
       const user = await auth().currentUser
       let users = database().ref('users/'+user.uid);
+      let users2 = database().ref('users/'+user.uid);
       users.once('value', snatchot =>{
         let callId = snatchot.val().callId;
         //setCal(callId)
         AuthService.check({id: callId, email: user.email, password: user.email, login: user.email, idU: user.uid});
       })
+
+      const onRegister = async (token)  =>{
+        console.log('[App] onRegister: ', token);
+        users2.update({token: token});
+      }
+      const onNotification = async (notify) => {
+        console.log('[App] onNotification: ', notify);
+        const options = {
+          sound: 'default',
+          playSound: true,
+        };
+        await localNotificationService.showNotification(
+          0,
+          notify.title,
+          notify.body,
+          notify,
+          options,
+        );
+      }
+      const onOpenNotification = (notify) => {
+        console.log('[App] onOpenNotification: ', notify);
+      }
+      await fcmService.registerAppWithFCM();
+      await fcmService.register(onRegister, onNotification, onOpenNotification);
+      await localNotificationService.configure(onOpenNotification);
     })();
   }, []);
 
@@ -217,7 +247,7 @@ export default function HomeScreen(props){
                   <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
 	                    <View style={styles.cardContent2}>
                         <TouchableOpacity
-                          onPress={()=>props.navigation.navigate("SearchDoctorScreen")}
+                          onPress={()=>props.navigation.navigate("FileNav")}
                         >
                           <Neomorph
                               swapShadows
@@ -230,9 +260,9 @@ export default function HomeScreen(props){
 
                                   }}
                           >   
-                            <Ionicons color="white" name="search" size={35} style={{marginTop: -hp("1%")}}/>
+                            <Ionicons color="white" name="document-text-outline" size={35} style={{marginTop: -hp("1%")}}/>
                             <View style={{alignItems: "center", justifyContent: "center"}}>
-                              <Text  style={{...styles.colorText, fontWeight: 'bold', fontSize: 14 }}>Recherche</Text>
+                              <Text  style={{...styles.colorText, fontWeight: 'bold', fontSize: 14 }}>Examens & Ordonances</Text>
                             </View>
                           </Neomorph>
                         </TouchableOpacity>

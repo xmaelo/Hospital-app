@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Platform,
   StyleSheet,
   Text,
   View,
@@ -12,11 +13,13 @@ import {
   FlatList,
   Dimensions,
   Alert,
+  KeyboardAvoidingView,
 } from 'react-native';
+import AttachmentIcon from 'react-native-vector-icons/Entypo'
 import { Icon } from 'react-native-elements';
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
-
+import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
 
 
 export default function MessagePatScreen({navigation}){
@@ -38,7 +41,8 @@ export default function MessagePatScreen({navigation}){
 		    	senderId: auth().currentUser.uid,
 		        message: inputMessage,
 		        userId: auth().currentUser.uid,
-		        docId: docId,
+		        docId: currentUser.docId,
+		        receiverId: currentUser.docId,
 		        time: new Date().toISOString(),
 		        createdAt: new Date().getTime()
 		    };
@@ -95,15 +99,25 @@ export default function MessagePatScreen({navigation}){
 						});
 					}
 				}); 
+				user.update({
+					last_seen: 'online'
+				})
 		      	
 		    })();
+		    return () => {
+		    	let user2 = database().ref('users/'+auth().currentUser.uid);
+			    user2.update({
+					last_seen: new Date().getTime()
+				})
+				console.log('è___________returns')
+			  }
 		  }, []);
 
 
 	  
 
 	return(
-		<TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+		<TouchableWithoutFeedback>
          <View style={styles.container}>
 		        <FlatList
 		          style={{ backgroundColor: '#f2f2ff' }}
@@ -153,28 +167,54 @@ export default function MessagePatScreen({navigation}){
 		            </TouchableWithoutFeedback>
 		          )}
 		        />
-		        <View style={{ paddingVertical: 10 }}>
-		          <View style={styles.messageInputView}>
-		            <TextInput
-		              defaultValue={inputMessage}
-		              style={styles.messageInput}
-		              editable={!!currentUser.docId}
-		              placeholder='Message'
+
+
+		        <View style={styles.container1}>
+		          <View style={styles.inputContainer}>
+		            <AutoGrowingTextInput
+		              style={styles.textInput}
+		              placeholder="Votre message..."
+		              placeholderTextColor="grey"
+		              value={inputMessage}
 		              onChangeText={(text) => setInputMessage(text)}
-		              onSubmitEditing={() => {
-		                sendMessage();
-		              }}
+		              maxHeight={170}
+		              minHeight={50}
+		               editable={!!currentUser.docId}
+		              enableScrollToCaret
 		            />
-		            <TouchableOpacity
-		              style={styles.messageSendView}
-		              onPress={() => {
-		                sendMessage();
-		              }}
-		            >
-		              <Icon name='send' type='material' />
+		            <TouchableOpacity style={styles.attachment}>
+		              <AttachmentIcon name="attachment" size={22} color="#8c8c8c" onPress={()=>{}} />
 		            </TouchableOpacity>
 		          </View>
+		          <TouchableOpacity style={styles.button}>
+		            <Icon name="send" size={32} color="blue" onPress={() => sendMessage()} />
+		          </TouchableOpacity>
 		        </View>
+
+		        {
+		        // 	<View style={{ paddingVertical: 10 }}>
+		        //   <View style={styles.messageInputView}>
+		        //     <TextInput
+		        //       defaultValue={inputMessage}
+		        //       style={styles.messageInput}
+		        //       editable={!!currentUser.docId}
+		        //       placeholder='Message'
+		        //       onChangeText={(text) => setInputMessage(text)}
+		        //       onSubmitEditing={() => {
+		        //         sendMessage();
+		        //       }}
+		        //     />
+		        //     <TouchableOpacity
+		        //       style={styles.messageSendView}
+		        //       onPress={() => {
+		        //         sendMessage();
+		        //       }}
+		        //     >
+		        //       <Icon name='send' type='material' />
+		        //     </TouchableOpacity>
+		        //   </View>
+		        // </View>
+		    }
           </View>
         </TouchableWithoutFeedback>
 	)
@@ -182,6 +222,49 @@ export default function MessagePatScreen({navigation}){
 
 
 const styles = StyleSheet.create({
+  container1: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'lightgrey',
+    paddingVertical: 12,
+    paddingHorizontal: 35
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '300',
+    color: '#8c8c8c',
+    borderRadius: 25,
+    paddingHorizontal: 12,
+    paddingTop: Platform.OS === 'ios' ? 14 : 10,
+    paddingBottom: Platform.OS === 'ios' ? 14 : 10,
+    paddingRight: 35,
+    backgroundColor: 'whitesmoke',
+  },
+  button: {
+    width: 40,
+    height: 50,
+    marginBottom: Platform.OS === 'ios' ? 15 : 0,
+    marginLeft: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  attachment: {
+    width: 40,
+    height: 50,
+    position: 'absolute',
+    right: 5,
+    bottom: 0,
+    marginLeft: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inputContainer: {
+    marginBottom: Platform.OS === 'ios' ? 15 : 0,
+    flexDirection: 'row'
+  },
   headerLeft: {
     paddingVertical: 4,
     paddingHorizontal: 10,
@@ -192,6 +275,7 @@ const styles = StyleSheet.create({
   userProfileImage: { height: '100%', aspectRatio: 1, borderRadius: 100 },
   container: {
     flex: 1,
+    paddingBottom: 10,
     backgroundColor: '#f2f2ff',
   },
   messageInputView: {

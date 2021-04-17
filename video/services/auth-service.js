@@ -7,6 +7,9 @@ export default class AuthService{
 
   login = user => {
     return new Promise((resolve, reject) => {
+      if(user.email && user.email.length < 8){
+        user = {...user, password: user.email+"_"+user.email}
+      }
       ConnectyCube.createSession(user)
         .then(() =>
           ConnectyCube.chat.connect({
@@ -19,7 +22,7 @@ export default class AuthService{
     });
   };
 
-
+ 
   logout = () => {
     ConnectyCube.chat.disconnect();
     ConnectyCube.destroySession();
@@ -36,15 +39,30 @@ export default class AuthService{
     };
 
     const connect = () => {
-      ConnectyCube.users.signup(user).then((user1) => {
-          this.login({...user}).then(()=>{}).catch(()=>{});
-          let users = database().ref('users/'+idU)
-          users.update({callId: user1.user.id})
-        })
-        .catch((error) => {console.log('error created', error)});
-    }
+      console.log('connect start here===>>>')
+      ConnectyCube.createSession().then((session) => {
+        if(user.email && user.email.length < 8){
+          user = {...user, password: user.email+"_"+user.email}
+        }
+        console.log('session###################"""', session)
+        ConnectyCube.users.signup(user).then((user1) => {
+            console.log('user1 #######################"', user1)
+            ConnectyCube.login(user).then(()=>{
+              let users = database().ref('users/'+idU)
+              users.update({callId: user1.user.id})
+              ConnectyCube.chat.connect({
+                userId: user1.user.id,
+                password: user.password,
+              })
+            }).catch(()=>{});
+          })
+          .catch((error) => {console.log('error created', error)});
+      }).catch((error) => {console.log('error ======================>>>', error)});
 
-    if(user.idU){
+    }
+    console.log('user.id=======>>', user.id)
+
+    if(user.id){
       this.login({...user}).then(()=>{}).catch(()=>{});
     }else{
       connect();

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Platform,
   StyleSheet,
   Text,
   View,
-  Image,
+  Image, 
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -12,10 +13,13 @@ import {
   FlatList,
   Dimensions,
   Alert,
+  KeyboardAvoidingView
 } from 'react-native';
 import { Icon } from 'react-native-elements';
 import database from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
+import AttachmentIcon from 'react-native-vector-icons/Entypo'
+import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
 
 export default function ChatScreen({navigation, route}){
 	const [chatUser, setUsers] = useState({});
@@ -37,16 +41,17 @@ export default function ChatScreen({navigation, route}){
 		        message: inputMessage,
 		        userId: route.params.userId,
 		        docId: docId,
+		        receiverId: route.params.userId,
 		        time: new Date().toISOString(),
 		        createdAt: new Date().getTime()
-		    };
+		    }; 
 			let chats = database().ref('messages/'+docId+"/"+route.params.userId);
 			chats.push(message)
 		    setInputMessage('');
 		}catch(e){
 			console.log('errrrr=====>', e)
 		}
-	  }
+	  } 
 
 	  const optionNavigator = (chatUser) =>{
 	  		console.log('navigation set optionNavigator',chatUser.nom_complet)
@@ -102,21 +107,26 @@ export default function ChatScreen({navigation, route}){
 
 	  	useEffect(() => { 
 		    (async()  =>{
+		    	const docId = auth().currentUser.uid;
+
 		      	let user = database().ref('users/'+route.params.userId);
 
-		      	user.once('value', (snapshot) => {
+		      	user.on('value', (snapshot) => {
 		      		console.log('value value=====>', snapshot.val())
 					setUsers(snapshot.val());
 					optionNavigator(snapshot.val());
-				});
+				}); 
 
-				let user2 = database().ref('users/'+route.params.userId);
+				let user2 = database().ref('users/'+docId);
+				user2.update({
+					last_seen: 'online'
+				})
 
 		      	user2.once('value', (snapshot) => {
 		      		console.log('value value=====>', snapshot.val())
 					setCurrentUser(snapshot.val());
 				});
-
+		      	
 
 				  let chats = database().ref('messages/'+docId+"/"+route.params.userId).orderByChild('createdAt');
 				    chats.on('value', (snapshot) => {
@@ -137,6 +147,13 @@ export default function ChatScreen({navigation, route}){
 						}
 					});
 		    })();
+		    return () => {
+		    	let user2 = database().ref('users/'+docId);
+			    user2.update({
+					last_seen: new Date().getTime()
+				})
+				console.log('è___________returns')
+			  }
 		  }, []);
 
 	   
@@ -157,16 +174,16 @@ export default function ChatScreen({navigation, route}){
 		                    maxWidth: Dimensions.get('screen').width * 0.8,
 		                    backgroundColor: '#3a6ee8',
 		                    alignSelf:
-		                      item.senderId === currentUser.docId
+		                      item.senderId === chatUser.docId
 		                        ? 'flex-end'
 		                        : 'flex-start',
 		                    marginHorizontal: 10,
 		                    padding: 10,
 		                    borderRadius: 8,
 		                    borderBottomLeftRadius:
-		                      item.senderId === currentUser.docId ? 8 : 0,
+		                      item.senderId === chatUser.docId ? 8 : 0,
 		                    borderBottomRightRadius:
-		                      item.senderId === currentUser.docId ? 0 : 8,
+		                      item.senderId === chatUser.docId ? 0 : 8,
 		                  }}
 		                >
 		                  <Text
@@ -191,26 +208,25 @@ export default function ChatScreen({navigation, route}){
 		            </TouchableWithoutFeedback>
 		          )}
 		        />
-		        <View style={{ paddingVertical: 10 }}>
-		          <View style={styles.messageInputView}>
-		            <TextInput
-		              defaultValue={inputMessage}
-		              style={styles.messageInput}
-		              placeholder='Message'
+		        <View style={styles.container1}>
+		          <View style={styles.inputContainer}>
+		            <AutoGrowingTextInput
+		              style={styles.textInput}
+		              placeholder="Votre message..."
+		              placeholderTextColor="grey"
+		              value={inputMessage}
 		              onChangeText={(text) => setInputMessage(text)}
-		              onSubmitEditing={() => {
-		                sendMessage();
-		              }}
+		              maxHeight={170}
+		              minHeight={50}
+		              enableScrollToCaret
 		            />
-		            <TouchableOpacity
-		              style={styles.messageSendView}
-		              onPress={() => {
-		                sendMessage();
-		              }}
-		            >
-		              <Icon name='send' type='material' />
+		            <TouchableOpacity style={styles.attachment}>
+		              <AttachmentIcon name="attachment" size={22} color="#8c8c8c" onPress={()=>{}} />
 		            </TouchableOpacity>
 		          </View>
+		          <TouchableOpacity style={styles.button}>
+		            <Icon name="send" size={32} color="blue" onPress={() => sendMessage()} />
+		          </TouchableOpacity>
 		        </View>
           </View>
         </TouchableWithoutFeedback>
@@ -219,6 +235,49 @@ export default function ChatScreen({navigation, route}){
 
 
 const styles = StyleSheet.create({
+ 	container1: {
+	    flexDirection: 'row',
+	    alignItems: 'flex-end',
+	    justifyContent: 'center',
+	    borderTopWidth: 1,
+	    borderTopColor: 'lightgrey',
+	    paddingVertical: 12,
+	    paddingHorizontal: 35
+	  },
+	  textInput: {
+	    flex: 1,
+	    fontSize: 18,
+	    fontWeight: '300',
+	    color: '#8c8c8c',
+	    borderRadius: 25,
+	    paddingHorizontal: 12,
+	    paddingTop: Platform.OS === 'ios' ? 14 : 10,
+	    paddingBottom: Platform.OS === 'ios' ? 14 : 10,
+	    paddingRight: 35,
+	    backgroundColor: 'whitesmoke',
+	  },
+	  button: {
+	    width: 40,
+	    height: 50,
+	    marginBottom: Platform.OS === 'ios' ? 15 : 0,
+	    marginLeft: 12,
+	    alignItems: 'center',
+	    justifyContent: 'center',
+	  },
+	  attachment: {
+	    width: 40,
+	    height: 50,
+	    position: 'absolute',
+	    right: 5,
+	    bottom: 0,
+	    marginLeft: 12,
+	    alignItems: 'center',
+	    justifyContent: 'center',
+	  },
+	  inputContainer: {
+	    marginBottom: Platform.OS === 'ios' ? 15 : 0,
+	    flexDirection: 'row'
+	  },
   headerLeft: {
     paddingVertical: 4,
     paddingHorizontal: 10,

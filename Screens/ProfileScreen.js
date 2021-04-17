@@ -7,6 +7,7 @@ import { Text, Input, Button, CheckBox } from 'react-native-elements';
 import { ListItem } from 'react-native-elements'
 import database from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
+import {AuthService} from '../video/services'; 
 
 const list = [
   {
@@ -39,6 +40,10 @@ export default function ProfileScreen({navigation}){
   const [poids, setPoids] = useState(null);
   const [date, setDate] = useState(null);
 
+  function onAction(){
+    AuthService.logout()
+    navigation.navigate("LoginScreen")
+  }
   const createTwoButtonAlert = () =>
     Alert.alert(
       "Confirmation",
@@ -49,7 +54,8 @@ export default function ProfileScreen({navigation}){
           onPress: () => console.log("Cancel Pressed"),
           style: "cancel"
         },
-        { text: "OK", onPress: () => auth().signOut().then(() => navigation.navigate("LoginScreen")) }
+        { text: "OK", onPress: () => auth().signOut().then(() => onAction())
+        }
       ]
     );
 

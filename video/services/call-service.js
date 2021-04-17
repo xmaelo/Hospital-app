@@ -91,6 +91,14 @@ export default class CallService {
     }
   };
 
+  setMuteVideoState = mute => {
+    if(mute){
+      this._session.mute('video');
+    }else{
+      this._session.mute('video');
+    }
+  }
+
   switchCamera = localStream => {
     localStream.getVideoTracks().forEach(track => track._switchCamera());
   };
