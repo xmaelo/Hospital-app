@@ -10,6 +10,7 @@ export default class ToolBar extends Component {
   state = {
     isAudioMuted: false,
     isFrontCamera: true,
+    isVideoMuted: false,
   };
 
   componentDidMount(){ 
@@ -22,6 +23,7 @@ export default class ToolBar extends Component {
 
     if (!props.isActiveCall) {
       derivedState.isAudioMuted = false;
+      derivedState.isVideoMuted = false;
       derivedState.isFrontCamera = true;
     }
 
@@ -145,9 +147,11 @@ _renderMuteVideoButton = () => {
         <View style={styles.toolBarItem}>
           {isActiveCall && this._renderMuteButton()}
         </View>
-        <View style={styles.toolBarItem}>
-          {isActiveCall && this._renderMuteVideoButton()}
-        </View>
+        {isActiveCall &&
+          <View style={styles.toolBarItem}>
+            {isActiveCall && this._renderMuteVideoButton()}
+          </View>
+        }
         <View style={styles.toolBarItem}>
           {this._renderCallStartStopButton(isCallInProgress)}
         </View>

@@ -21,6 +21,7 @@ const docId = "QY7P52WSS6UmEFX6Dmc0qhDSG232";
 
 export default function HomeMedScreen(props){
 	const [users, setUsers] = useState([]);
+	const [doc, setDoc] = useState({});
 	const [pat, setPat] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
 
@@ -34,7 +35,11 @@ export default function HomeMedScreen(props){
           onPress: () => console.log("Cancel Pressed"),
           style: "cancel"
         },
-        { text: "OK", onPress: () => auth().signOut().then(() => props.navigation.navigate("LoginScreen")) }
+        { text: "OK", onPress: () => {
+        	let users2 = database().ref('users/'+auth().currentUser.uid);
+        	users2.update({last_seen: new Date().getTime()});
+        	auth().signOut().then(() => props.navigation.navigate("LoginScreen"))} 
+        }
       ]
     );
 
@@ -53,8 +58,11 @@ export default function HomeMedScreen(props){
 		});
 	      let users1 = database().ref('users/'+user.uid);
 	      let users2 = database().ref('users/'+user.uid);
+	      console.log('//////////////////////////////////')
+	      users2.update({last_seen: 'online'});
 	      users1.once('value', snatchot =>{
 	        let callId = snatchot.val().callId;
+	        setDoc(snatchot.val());
 	        AuthService.check({id: callId, email: user.email, password: user.email, login: user.email, idU: user.uid});
 	        //new Init().start();
 	      })
@@ -76,12 +84,16 @@ export default function HomeMedScreen(props){
 	        console.log('[App] onRegister: ', token);
 	        users2.update({token: token});
 	      }
+	      
 	      const onNotification = async (notify) => {
 	        console.log('[App] onNotification: ', notify);
 	        const options = {
 	          sound: 'default',
 	          playSound: true,
 	        };
+	        console.log('--------------------------------------------------------')
+	        console.log(notify.title, notify.body)
+	        console.log('--------------------------------------------------------')
 	        await localNotificationService.showNotification(
 	          0,
 	          notify.title,
@@ -108,7 +120,7 @@ export default function HomeMedScreen(props){
                         source={img}
                     />
                     <Text style={{...styles.slogan, fontWeight: "bold", marginTop: -hp('.5%')}}>
-                      Bienvenue Dr. Yann Alpha
+                      Bienvenue Dr. {doc.nom_complet}
                     </Text>
                 </View> 
 

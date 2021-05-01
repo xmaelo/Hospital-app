@@ -17,35 +17,21 @@ import { ListItem, Icon , Badge} from 'react-native-elements'
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 
+const labels = [
+	"Premier trimestre",
+	"Deuxieme trimestre",
+	"Troisième trimestre",
+	"Sac d'hopital",
+	"Ramenez le bébé à la maison"
 
+	]
 
  
-export default function ListMessagesDocScreen({navigation, route}){
-  const [messages, setMessages] = useState({});
-  const docId = auth().currentUser.uid;
+export default function ToDOScreen({navigation, route}){
+  const [cliked, setCliked] = useState(null);
   useEffect(() => {  
         (async()  =>{
-          let chats = database().ref('messages/'+docId);
-          let us = {};
-            chats.on('value', (snapshot) => { 
-              if(snapshot.val()){
-                let mes = Object.values(snapshot.val()).map((value, key)=>{
-                  let lastmessage = Object.values(value).sort((a, b)=>parseInt(b.createdAt)-parseInt(a.createdAt))[0]
-                  let user = database().ref('users/'+lastmessage.userId);
-                  
-                  user.on('value', (snapshot2) => {
-                    let nr = database().ref('noread/'+docId+"/"+lastmessage.userId+'/doctor')
-                    nr.on('value', sna => {
-                    let unread = sna.val()? sna.val().count : 0;
-                    let casex = {[lastmessage.userId]: {...snapshot2.val(),unread: unread, ...lastmessage}}
-                    us = {...us, ...casex};
-                    setMessages(us);
-                      console.log('unread unread===', unread)
-                    })
-                  })
-                })
-              }
-            });
+        	//
           })();
       }, []);
 
@@ -54,41 +40,42 @@ export default function ListMessagesDocScreen({navigation, route}){
       <View style={{ paddingTop: 20}}>
         <View>
           {
-              Object.values(messages).sort((a, b)=>b.createdAt - a.createdAt).map((item, i) => ( 
-                <TouchableOpacity
-                 key={i}
-                 onPress={()=>navigation.navigate("ChatScreen", {userId: item.userId})}
-                >
-                  <ListItem bottomDivider>
-                    <Image
-                        style={styles.userProfileImage}
-                        source={item.profile ? {
-                          uri: item.profile
-                        }: require('../../assets/imgs/doc.jpg')} 
-                      />
+              labels.map((item, i) => (
+
+                  <ListItem bottomDivider key={i}>
                     <ListItem.Content>
-                      <ListItem.Title>{item.nom_complet}</ListItem.Title>
-                      <ListItem.Subtitle>
-                        {
-                          item.message&&
-                          item.message.length <= 35?
-                          item.message :
-                          item.message.slice(0, 32)+"..."
-                        }
-                      </ListItem.Subtitle>
+                      <ListItem.Title>
+                      	<View
+                      		style={{alignItems: "center", justifyContent: "center", ...styles.row}}
+                      	>
+	                      	<TouchableOpacity
+			                 key={i}
+			                 onPress={()=>cliked!==i? setCliked(i): setCliked(null)}
+			                >
+		                      <Ionicons
+		                        name={cliked!==i?"chevron-down-circle-outline": "chevron-up-circle-outline"}
+		                        size={30}
+		                        color="#4765C3"
+		                      />
+	                		</TouchableOpacity>
+
+	                      	<Text style={{fontSize: 18}}>{" "+item}</Text>
+	                    </View>
+                      </ListItem.Title>
+                        {cliked===i&&
+	                      <ListItem.Subtitle style={{...styles.row, marginTop: 10}}>
+			                      <Ionicons
+			                        name={"checkmark-done"}
+			                        size={20}
+			                        color="#4765C3"
+			                      /> 
+		                      	<Text>
+		                      		{item}{item}{item}
+		                      	</Text>
+	                      </ListItem.Subtitle>
+	                    }
                     </ListItem.Content> 
-                    <View style={styles.row}>
-                      {item.unread && item.unread !== 0 ?
-                        <Badge value={item.unread} status="primary"/> : null
-                      } 
-                      <Ionicons
-                        name="chevron-forward"
-                        size={20}
-                        color="#4765C3"
-                      /> 
-                    </View>
                   </ListItem>
-                </TouchableOpacity>
               ))
            }
         </View>
@@ -98,6 +85,19 @@ export default function ListMessagesDocScreen({navigation, route}){
 }
 
 
+const Item1 = () => <View style={{flexDirection: "row"}}>
+                      		<Ionicons
+		                        name={"checkmark-done"}
+		                        size={27}
+		                        color="#4765C3"
+		                      />
+		                      <Text>
+		                      	Dites aurevoir au mauvaises habitudes(fuler, alcool, grande quantité de caféine)
+		                      </Text>
+                      	</View>
+const items = {
+	1: ()=><Item1/>
+}
 
 const styles = StyleSheet.create({
   label: {

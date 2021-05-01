@@ -111,50 +111,62 @@ export default function PatientListScreen(props){
 	        </View>
 	        {filteredUsers.length > 0 ? (
 	          <ScrollView>
-	            {filteredUsers.map((user, key) => (
-	              <View key={key} style={styles.userCard}>
-		              <TouchableOpacity
-		                onPress={() => {
-		                	props.navigation.navigate('PatientDataScreen',{userId: user.key});
-		                }}//
-		              >
-		              	<View style={{flexDirection: "row", alignItems: 'center',}}>
-			                <Image
-			                  style={styles.userImage}
-			                  source={user.profile ? {
-				           		uri: user.profile
-				                }: require('../../assets/imgs/doc.jpg')} 
-			                />
-			                <View style={styles.userCardRight}>
-			                  <Text
-			                    style={{ fontSize: 18, fontWeight: '500' }}
-			                  >{user.nom_complet}</Text>
-			                  <Text  style={{color: "#5F666D", fontSize: 15}}>{user.phone}</Text>
-			                  <Text style={{color: "#5F666D", fontSize: 13}}>Last update: 20/03/2021</Text>
+	          	<View style={{paddingHorizontal: 12}} >
+		            {filteredUsers.map((user, key) => (
+		              <View key={key} style={styles.userCard}>
+			              <TouchableOpacity
+			                onPress={() => {
+			                	//props.navigation.navigate('PatientDataScreen',{userId: user.key, empty: true});
+			                }}//
+			              >
+			              	<View style={{flexDirection: "row", alignItems: 'center',}}>
+				                <Image
+				                  style={styles.userImage}
+				                  source={user.profile ? {
+					           		uri: user.profile
+					                }: require('../../assets/imgs/doc.jpg')} 
+				                />
+				                <View style={styles.userCardRight}>
+				                  <Text
+				                    style={{ fontSize: 18, fontWeight: '500' }}
+				                  >{user.nom_complet}</Text>
+				                  <Text  style={{color: "#5F666D", fontSize: 15}}>{user.phone}</Text>
+				                  <Text style={{color: "#5F666D", fontSize: 13}}>{user.email}</Text>
+				                </View>
+				            </View>
+		              	</TouchableOpacity>
+		                <View>
+			                <View style={{flexDirection: "row", justifyContent: "space-around"}} >
+			                	<TouchableOpacity
+			                	    style={{marginLeft: wp('15%')}}
+					                onPress={() => {
+					                	onSendDemande(user)
+					                }}
+					            >
+			                		<Ionicons name="person-add-outline" size={27} color="#4793CC"/>
+			                	</TouchableOpacity>
+
+			                	{/*
+			                	<TouchableOpacity
+					                onPress={() => {
+					                	props.navigation.push('VideoScreen', {callId: user.callId, is_doctor: true});
+					                }}
+					            >
+			                		<Ionicons name="call-outline" size={20} color="#4793CC" style={{paddingHorizontal: 20}} />
+			                	</TouchableOpacity>
+					            <TouchableOpacity
+					                onPress={() => {
+					                	props.navigation.navigate('ChatScreen',{userId: user.key});
+					                }}
+					            >
+			                		<Ionicons name="chatbubble-outline" size={20} color="#4793CC"/>
+			                	</TouchableOpacity>
+			                	*/}
 			                </View>
 			            </View>
-	              	</TouchableOpacity>
-	                <View>
-		                <View style={{flexDirection: "row"}} >
-		                	<TouchableOpacity
-				                onPress={() => {
-				                	onSendDemande(user)
-				                }}
-				            >
-		                		<Ionicons name="person-add-outline" size={20} color="#4793CC"/>
-		                	</TouchableOpacity>
-		                	<Ionicons name="call-outline" size={20} color="#4793CC" style={{paddingHorizontal: 20}} />
-		                	<TouchableOpacity
-				                onPress={() => {
-				                	props.navigation.navigate('ChatScreen',{userId: user.key});
-				                }}
-				            >
-		                		<Ionicons name="chatbubble-outline" size={20} color="#4793CC"/>
-		                	</TouchableOpacity>
-		                </View>
-		            </View>
-	              </View>
-	            ))}
+		              </View>
+		            ))}
+		        </View>
 	            <View style={{ height: 50 }}></View>
 	          </ScrollView>
 	        ) : searchText.length > 0 ? (
@@ -177,7 +189,7 @@ export default function PatientListScreen(props){
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 12
+    // paddingHorizontal: 12
   },
   searchView: {
     display: 'flex',

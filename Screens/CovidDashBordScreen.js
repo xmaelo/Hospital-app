@@ -3,6 +3,7 @@ import { View, StyleSheet, SafeAreaView, Image, ScrollView, StatusBar, Touchable
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {Linking} from 'react-native'
 import { Text, Input, Button, CheckBox } from 'react-native-elements';
 
 // https://coronavirus-19-api.herokuapp.com/countries/cameroon
@@ -114,7 +115,9 @@ function CovidDashBordScreen ({ navigation }){
 			        <View style={{...styles.row, justifyContent: 'space-around',}}>
 			        	<View style={{alignItems: "center"}}>
 			        		<View>
-		        				<TouchableOpacity>
+		        				<TouchableOpacity
+		        					onPress={()=>Linking.openURL(`tel:1510`)}
+		        				>
 					        		<Image style={{ width: 70, height: 70,}} 
 					           			source={require('../../assets/imgs/sos1.png')} 
 					            	/>

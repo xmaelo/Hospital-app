@@ -1,16 +1,31 @@
-import React, { useState }from 'react';
+import React, { useState, useEffect }from 'react';
 import { View, StyleSheet, SafeAreaView, ScrollView, Image, Picker, Switch, StatusBar, TouchableOpacity } from 'react-native';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Text, Input, Button, CheckBox } from 'react-native-elements';
-
+import database from '@react-native-firebase/database';
+import auth from '@react-native-firebase/auth';
 
 
 
 export default function SettingScreen(){
 	const [switchVal, setSwitchVal] = useState(false);
 	const [selectedValue, setSelectedValue] = useState("java");
+	const [user, setUser] = useState({});
+
+	useEffect(() => {
+    (async()  =>{ 
+      const userId = await auth().currentUser.uid
+      let user = database().ref('users/'+userId);
+
+      user.once('value', snatchot =>{
+      	setUser(snatchot.val())
+      })
+
+    })();
+  }, []);
+
 	return(
 		<ScrollView style={styles.container}>
 			<View>
@@ -63,7 +78,7 @@ export default function SettingScreen(){
 							<Input
 							 
 							  placeholder='INPUT WITH CUSTOM ICON'
-							  value={"foletia.ktc@gmail.com"}
+							  value={user.email}
 							  rightIcon={
 							    <Ionicons
 							      name='checkmark-outline'
@@ -82,7 +97,7 @@ export default function SettingScreen(){
 							<Input
 							 
 							  placeholder='INPUT WITH CUSTOM ICON'
-							  value={"673276146"}
+							  value={user.phone}
 							  rightIcon={
 							    <Ionicons
 							      name='checkmark-outline'

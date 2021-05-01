@@ -32,23 +32,59 @@ export default function MessagePatScreen({navigation}){
  
 	  const [messages, setMessages] = useState([]);
 
-	  function sendMessage() {
+	  async function sendMessage() { 
 	  	try{
 		    if (inputMessage === '') {
 		      return setInputMessage('');
 		    }
 		    let message = {
 		    	senderId: auth().currentUser.uid,
-		        message: inputMessage,
+		        message: inputMessage.trim(),
 		        userId: auth().currentUser.uid,
-		        docId: currentUser.docId,
-		        receiverId: currentUser.docId,
+		        docId: docId,
+		        receiverId: docId,
 		        time: new Date().toISOString(),
 		        createdAt: new Date().getTime()
 		    };
 		    let chats = database().ref('messages/'+currentUser.docId+"/"+auth().currentUser.uid);
 			chats.push(message)
-		    setInputMessage('');
+			let nr = database().ref('noread/'+currentUser.docId+"/"+auth().currentUser.uid+'/doctor');
+		    
+
+		    nr.once('value', sna => {
+		    	let count = sna?.val()?.count
+		    	nr.update({count: count ? count+1 : 1})
+		    })
+
+		    let data = {
+			  "notification":{
+			    "title": chatUser.nom_complet,
+			    "image":"https://mamed.care/wp-content/uploads/2020/05/logo_mamed.jpg",
+			    "body": inputMessage.trim(),
+			    "priority" :"high"
+			  },
+			  "android": {
+			    "priority" :"high",
+			    "notification": {
+			    "title": chatUser.nom_complet,
+			    "image":"https://mamed.care/wp-content/uploads/2020/05/logo_mamed.jpg",
+			    "body": inputMessage.trim(),
+			    "priority" :"high"
+			    }
+			  },
+			  "priority": "high",
+			  "to": chatUser.token
+			}
+			setInputMessage('');
+		    const r =   fetch('https://fcm.googleapis.com/fcm/send', {
+	           method: 'POST',
+	           headers: { 
+	           	'Content-Type': 'application/json',
+	           	'Authorization': 'key=AAAAP7VCdt0:APA91bF5MdAIB1Z92mljdP_1fJsawD82CpHNydIDPQoKESEj4I-SPViZd358DpQU3DfktwYPSospp3Fpnh9LkfON_0k_1twb2XL5IPGIBxF8ywEtQHiq485YbialaCmEO8X6chBjh76t'
+	           },
+	           body: JSON.stringify(data)
+	         });
+		    console.log('====tokey########################""', r)
 		}catch(e){
 			console.log('errrrr=====>', e)
 		}
@@ -73,9 +109,11 @@ export default function MessagePatScreen({navigation}){
 						setMessages(mess)
 
 					}else{
+						setDocId(snapshot.val().docId);
 						let chats = database().ref('messages/'+snapshot.val().docId+"/"+auth().currentUser.uid).orderByChild('createdAt', 'desc');
 					    chats.on('value', (snapshot) => {
 					      	if(snapshot.val()){
+					      		database().ref('noread/'+snapshot.val().docId+"/"+auth().currentUser.uid+'/patient').update({count: 0})
 						      	let mes = Object.values(snapshot.val()).map((value, key)=>{
 						      		let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 									let d  = new Date(value.time);
@@ -95,6 +133,7 @@ export default function MessagePatScreen({navigation}){
 						let doc = database().ref('users/'+snapshot.val().docId);
 
 				      	doc.once('value', (snapshot) => {
+				      		console.log('docId docId ###############', snapshot.val());
 							setDoc(snapshot.val());
 						});
 					}
@@ -131,16 +170,16 @@ export default function MessagePatScreen({navigation}){
 		                    maxWidth: Dimensions.get('screen').width * 0.8,
 		                    backgroundColor: '#3a6ee8',
 		                    alignSelf:
-		                      item.senderId === auth().currentUser.uid
+		                      item.senderId !== currentUser.docId
 		                        ? 'flex-end'
 		                        : 'flex-start',
 		                    marginHorizontal: 10,
 		                    padding: 10,
 		                    borderRadius: 8,
 		                    borderBottomLeftRadius:
-		                      item.senderId === auth().currentUser.uid ? 8 : 0,
+		                      item.senderId !== currentUser.docId ? 8 : 0,
 		                    borderBottomRightRadius:
-		                      item.senderId === auth().currentUser.uid ? 0 : 8,
+		                      item.senderId !== currentUser.docId ? 0 : 8,
 		                  }}
 		                >
 		                  <Text

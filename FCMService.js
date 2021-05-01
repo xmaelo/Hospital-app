@@ -79,21 +79,16 @@ class FCMService {
   ) => {
     // when the app is running, but in the backgroud
     messaging().onNotificationOpenedApp(remoteMessage => {
-      console.log(
-        'background running',
-      );
+      console.log('app tourne__________________________________ en background');
       if (remoteMessage) {
         const notification = remoteMessage.notification;
         onOpenNotification(notification);
-        // this.removeDeliveredNotification(notification.notificationId)
       }
     });
 
     // when the app is opened from a quit state.
     messaging().getInitialNotification().then(remoteMessage => {
-        console.log(
-          'app enter',
-        );
+        console.log('une autre _____________________________nottif entrante');
         if (remoteMessage) {
           const notification = remoteMessage.notification;
           onOpenNotification(notification);
@@ -103,18 +98,19 @@ class FCMService {
 
     // foreground state messages
     this.messageListener = messaging().onMessage(async remoteMessage => {
-      console.log('app is sleep', remoteMessage);
+      console.log('#################========<<<<<<<<', remoteMessage);
       if (remoteMessage) {
-        let notification = null;
-        if (Platform.OS === 'ios') {
-          notification = remoteMessage.data.notification;
-        } else {
-          notification = remoteMessage.notification;
-        }
+          let notification = remoteMessage.notification;
+          if(!notification.body){
+            notification = {...notification, body: remoteMessage.body}
+          }
+          if(!notification.title){
+            notification = {...notification, title: remoteMessage.title}
+          }
         onNotification(notification);
       }
     });
-
+ 
     // triggered when have new token
     messaging().onTokenRefresh(fcmToken => {
       console.log('[FCMService] new token refresg: ', fcmToken);
@@ -123,7 +119,7 @@ class FCMService {
   };
 
   unRegister = () => {
-    this.messageListener();
+    //this.messageListener();
   };
 }
 

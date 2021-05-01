@@ -130,28 +130,32 @@ export default function HomeScreen(props){
 
       const onRegister = async (token)  =>{
         console.log('[App] onRegister: ', token);
-        users2.update({token: token});
+        users2.update({token: token, last_seen: 'online'});
       }
-      const onNotification = async (notify) => {
-        console.log('[App] onNotification: ', notify);
-        const options = {
-          sound: 'default',
-          playSound: true,
-        };
-        await localNotificationService.showNotification(
-          0,
-          notify.title,
-          notify.body,
-          notify,
-          options,
-        );
-      }
-      const onOpenNotification = (notify) => {
-        console.log('[App] onOpenNotification: ', notify);
-      }
-      await fcmService.registerAppWithFCM();
-      await fcmService.register(onRegister, onNotification, onOpenNotification);
-      await localNotificationService.configure(onOpenNotification);
+        
+        const onNotification = async (notify) => {
+          console.log('[App] onNotification: ', notify);
+          const options = {
+            sound: 'default',
+            playSound: true,   
+          };
+          console.log('--------------------------------------------------------')
+          console.log(notify.title, notify.body)
+          console.log('--------------------------------------------------------')
+          await localNotificationService.showNotification(
+            0,
+            notify.title,
+            notify.body,
+            notify,
+            options,
+          );
+        }
+        const onOpenNotification = (notify) => {
+          console.log('[App] onOpenNotification: ', notify);
+        }
+        await fcmService.registerAppWithFCM();
+        await fcmService.register(onRegister, onNotification, onOpenNotification);
+        await localNotificationService.configure(onOpenNotification);
     })();
   }, []);
 

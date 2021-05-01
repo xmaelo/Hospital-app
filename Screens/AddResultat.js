@@ -11,6 +11,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { showMessage, hideMessage } from "react-native-flash-message";
 import { useFocusEffect } from '@react-navigation/native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import FilePickerManager from 'react-native-file-picker';
+import storage from '@react-native-firebase/storage';
 
 const week = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
@@ -22,6 +24,24 @@ export default function AddResultat({navigation, route}){
 	const [title, setTitle] = useState('');
 	const [subtitle, setSubtitle] = useState('');
 	const [isDatePickerVisible1, setDatePickerVisibility1] = useState(false);
+
+	const [url, setUrl] = useState(null);
+	const [image, setImage] = useState(null);
+	const [showPicker, setShowFile] = useState(false);
+	const [noPicture, setNoPicture] = useState(false);
+
+	const upload = async () => {
+		try{
+			const userId = auth().currentUser.uid;
+		    const reference = storage().ref("images/"+image.fileName);	    
+		    let res = await reference.putFile(image.path);
+		    const url = await reference.getDownloadURL();
+		    console.log("res=====>",url)
+		    return url;
+	    }catch(e){
+	    	console.log('error ==========>', e)
+	    }
+	};
 
 	async function onSaveResultat(){
 		const userId = route.params?.userId;
@@ -42,15 +62,21 @@ export default function AddResultat({navigation, route}){
     	}
     	setDisabled(true)
 		try{
+			let url;
+			if(image){
+				url = await upload();
+			}
 			if(route.params?.key){
 				await database().ref('resultats/'+userId+"/"+route.params.key).update({
 				  name: title, 
+				  url: url,
 			      description: subtitle,
 			      date: start ? start.toISOString() : null
 				})
 			 }else{
 				await database().ref('resultats/'+userId).push({
 			      name: title, 
+			      url: url,
 			      description: subtitle,
 			      date: start ? start.toISOString() : null
 			    })
@@ -80,29 +106,30 @@ export default function AddResultat({navigation, route}){
 
 	}
 
-	useFocusEffect(
-	    React.useCallback(() => {
-			async function get() {
-	    		if(route.params?.key){
-	    			console.log('route.params.userId', route.params.userId)
-					const userId =  route.params.userId;
-					let cascontact = database().ref('resultats/'+route.params.userId+'/'+route.params.key);
-					try{
-						cascontact.once('value', (snapshot) => {
-							let it = snapshot.val();
-							setTitle(it.name)
-							setSubtitle(it.description)
-						});	
-					}catch(e){
-						console.log('erororroro getting', e)
-					}
-	    		}
-		    }
-		    get();
-		    return;
-		  }, []
-		)
-	);
+	useEffect(() => { 
+        (async()  =>{
+    		if(route.params?.key){
+    			console.log('route.params.userId', route.params.userId)
+				const userId =  route.params.userId;
+				let cascontact = database().ref('resultats/'+route.params.userId+'/'+route.params.key);
+				try{
+					cascontact.once('value', (snapshot) => {
+						let it = snapshot.val();
+						setTitle(it.name)
+						setSubtitle(it.description)
+						if(it.url && it.url.split('pdf')[1] || it.url && it.url.split('doc')[1]){
+							setNoPicture(true)
+							let tav = it.url.split('/');
+							setUrl({url: (tav[tav.length-1].split('?')[0]).split('%2')[1], path: false})
+							console.log(tav[tav.length-1].split('?')[0])
+						}
+					});	
+				}catch(e){
+					console.log('erororroro getting', e)
+				}
+    		}
+		})();
+    }, []);
 
 	const showDatePicker1 = () => {
 	    setDatePickerVisibility1(true);
@@ -144,6 +171,34 @@ export default function AddResultat({navigation, route}){
 				      size={24}
 				      color='black'
 				    />
+				  }
+				/>
+				<Input
+				  placeholder='Choisir le fichier'
+				  onTouchStart={() => {setShowFile(true)}}
+				  //onChangeText={() => setShowFile(!showPicker)}
+				  value={image && image.fileName || url?.url}
+				  leftIcon={
+				    <Ionicons
+				      name='pencil-outline'
+				      size={24}
+				      color='black'
+				    /> 
+				  }
+				  rightIcon={
+					url && !noPicture? 
+					<View> 
+						<Image 
+							style={{ width: 35, height: 50}}
+							source={require('../../assets/imgs/jpg.jpg')} 
+			            /> 
+					</View> : 
+					<View>  
+						<Image 
+							style={{ width: 35, height: 50}}
+							source={require('../../assets/imgs/pdf.png')} 
+			            /> 
+					</View> 
 				  }
 				/>
 				<View style={{...styles.row, ...styles.content3}}>
@@ -190,6 +245,24 @@ export default function AddResultat({navigation, route}){
 				<View style={{height: 20}}/>
 			</View>
 
+			{showPicker &&
+				FilePickerManager.showFilePicker(null, (response) => {
+				  console.log('Response = ', response);
+
+				  if (response.didCancel) {
+				    console.log('User cancelled file picker');
+				  }
+				  else if (response.error) {
+				    console.log('FilePickerManager Error: ', response.error);
+				  }
+				  else {
+				    setShowFile(false)
+				    setImage(response);
+				    //setUrl({url: response.path, path: true})
+				    console.log('response.path', response.path)
+				  }
+				})
+			}
 			<View style={{height: 30}}/>
 			<View>
 				<Button

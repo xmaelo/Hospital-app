@@ -16,14 +16,16 @@ import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-nativ
 import { ListItem, Icon , Badge} from 'react-native-elements'
 import { useFocusEffect } from '@react-navigation/native';
 import database from '@react-native-firebase/database';
+import FilePickerManager from 'react-native-file-picker';
+import storage from '@react-native-firebase/storage';
+import auth from '@react-native-firebase/auth'; 
 
-
+let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 export default function ResultatExamenScreen({navigation, route}){
 	const [resultats, setResultas] = useState([])
+	let tab = []; 
 	useFocusEffect(
 	    React.useCallback(() => {
-			let tab = [];
-			setResultas([])
 			async function get() {
 				console.log('get start here');
 				const userId =  route.params.userId;
@@ -32,14 +34,19 @@ export default function ResultatExamenScreen({navigation, route}){
 				covid.once('value', (snapshot) => {
 					if(snapshot.val()){
 						for (const [key, value] of Object.entries(snapshot.val())) {
-					    	tab.push({...value, key: key})
+							let d = value.date;
+							if(d){
+								d = new Date(d);
+								d.toLocaleDateString("en-US", options)
+							}
+					    	tab.push({...value, key: key, date: d})
 						}
 						console.log('tabb tab', tab)
 						setResultas(tab);
 					}
 				});	
 		    }
-		     get();
+	    	get();
 		    return;
 		  }, []
 		),

@@ -68,6 +68,7 @@ export default function PatientDataScreen({navigation, route}){
     const [user, setUser] = useState({});
     const [antecedents, setAntedent] = useState({});
     const [list, setList] = useState(lists);
+    const [empty, setEmpty] = useState(false);
 
     useEffect(() => {
 	    (async()  =>{
@@ -80,6 +81,9 @@ export default function PatientDataScreen({navigation, route}){
 				setAntedent(snapshot.val());
 			    lists[1].length = Object.entries(snapshot.val()).length
 			    setList(lists);
+			    if(route.params.empty){	 
+			    	setEmpty(true)
+			    }
 			});
 	    })();
 	}, []);
@@ -138,26 +142,39 @@ export default function PatientDataScreen({navigation, route}){
 							/>
 							<Text style={styles.slogan}>Schedule</Text>
 						</View>
-						<View
-							style={{alignItems: "center"}}
+						<TouchableOpacity
+							onPress={()=>{
+									if(user.callId){
+										navigation.push('VideoScreen', {callId: user.callId, is_doctor: true})
+									}
+								}
+							}
 						>
-							<Ionicons
-								name="call"
-								size={25}
-								color="#4D9BBE"
-							/>
-							<Text style={styles.slogan}>Call</Text>
-						</View>
-						<View
-							style={{alignItems: "center"}}
+							<View
+								style={{alignItems: "center"}}
+							>
+								<Ionicons
+									name="call"
+									size={25}
+									color="#4D9BBE"
+								/>
+								<Text style={styles.slogan}>Call</Text>
+							</View>
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={()=>navigation.push('ChatScreen', {userId: route.params.userId})}
 						>
-							<Ionicons
-								name="chatbubble"
-								size={25}
-								color="#4D9BBE"
-							/>
-							<Text style={styles.slogan}>Text</Text>
-						</View>
+							<View
+								style={{alignItems: "center"}}
+							>
+								<Ionicons
+									name="chatbubble"
+									size={25}
+									color="#4D9BBE"
+								/>
+								<Text style={styles.slogan}>Text</Text>
+							</View>
+						</TouchableOpacity>
 						<View
 							style={{alignItems: "center"}}
 						>
@@ -167,16 +184,6 @@ export default function PatientDataScreen({navigation, route}){
 								color="#4D9BBE"
 							/>
 							<Text style={styles.slogan}>Download</Text>
-						</View>
-						<View
-							style={{alignItems: "center"}}
-						>
-							<Ionicons
-								name="logo-whatsapp"
-								size={25}
-								color="#4D9BBE"
-							/>
-							<Text style={styles.slogan}>Whatsapp</Text>
 						</View>
 			        </View>
 				</View>

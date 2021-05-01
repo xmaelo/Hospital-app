@@ -38,7 +38,7 @@ export default function ChatScreen({navigation, route}){
 		    }
 		    let message = {
 		    	senderId: docId,
-		        message: inputMessage,
+		        message: inputMessage.trim(),
 		        userId: route.params.userId,
 		        docId: docId,
 		        receiverId: route.params.userId,
@@ -47,7 +47,41 @@ export default function ChatScreen({navigation, route}){
 		    }; 
 			let chats = database().ref('messages/'+docId+"/"+route.params.userId);
 			chats.push(message)
-		    setInputMessage('');
+			let nr = database().ref('noread/'+docId+"/"+route.params.userId+'/patient');
+		    nr.once('value', sna => {
+		    	let count = sna?.val()?.count
+		    	nr.update({count: count ? count+1 : 1})
+		    })
+		    let data = {
+			  "notification":{
+			    "title": chatUser.nom_complet,
+			    "image":"https://mamed.care/wp-content/uploads/2020/05/logo_mamed.jpg",
+			    "body": inputMessage.trim(),
+			    "priority" :"high"
+			  },
+			  "android": {
+			    "priority" :"high",
+			    "notification": {
+			    "title": chatUser.nom_complet,
+			    "image":"https://mamed.care/wp-content/uploads/2020/05/logo_mamed.jpg",
+			    "body": inputMessage.trim(),
+			    "priority" :"high"
+			    }
+			  },
+			  "priority": "high",
+			  "to": chatUser.token
+			}
+			setInputMessage('');
+		    const r =  fetch('https://fcm.googleapis.com/fcm/send', {
+	           method: 'POST',
+	           headers: { 
+	           	'Content-Type': 'application/json',
+	           	'Authorization': 'key=AAAAP7VCdt0:APA91bF5MdAIB1Z92mljdP_1fJsawD82CpHNydIDPQoKESEj4I-SPViZd358DpQU3DfktwYPSospp3Fpnh9LkfON_0k_1twb2XL5IPGIBxF8ywEtQHiq485YbialaCmEO8X6chBjh76t'
+	           },
+	           body: JSON.stringify(data)
+	         });
+		    console.log('====tokey########################""', r)
+		   
 		}catch(e){
 			console.log('errrrr=====>', e)
 		}
@@ -95,7 +129,7 @@ export default function ChatScreen({navigation, route}){
 		        <TouchableOpacity
 		          style={{ paddingRight: 10 }}
 		          onPress={() => {
-		            Alert.alert('Audio Call', 'Audio Call Button Pressed');
+		            navigation.push('VideoScreen', {callId: chatUser.callId, is_doctor: true})
 		          }}
 		        >
 		          <Icon name='call' size={28} color='black' />
@@ -127,11 +161,12 @@ export default function ChatScreen({navigation, route}){
 					setCurrentUser(snapshot.val());
 				});
 		      	
-
+  
 				  let chats = database().ref('messages/'+docId+"/"+route.params.userId).orderByChild('createdAt');
 				    chats.on('value', (snapshot) => {
 				      	if(snapshot.val()){
-					      	let mes = Object.values(snapshot.val()).map((value, key)=>{
+					      	database().ref('noread/'+docId+"/"+route.params.userId+'/doctor').update({count: 0})
+					      	let mes = Object.entries(snapshot.val()).map(([key, value])=>{
 					      		let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 								let d  = new Date(value.time);
 								let firs = "";

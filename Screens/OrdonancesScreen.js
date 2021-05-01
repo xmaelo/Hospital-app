@@ -28,13 +28,14 @@ const list = [
     subtitle: 'Vice Chairman'
   }
 ]
+let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
 export default function OrdonancesScreen({navigation, route}){
 	const [ordonnances, setOrdonnances] = useState([])
+			let tab = [];
 
 	useFocusEffect(
 	    React.useCallback(() => {
-			let tab = [];
 			setOrdonnances([])
 			async function get() {
 				console.log('get start here');
@@ -44,7 +45,12 @@ export default function OrdonancesScreen({navigation, route}){
 				covid.once('value', (snapshot) => {
 					if(snapshot.val()){
 						for (const [key, value] of Object.entries(snapshot.val())) {
-					    	tab.push({...value, key: key})
+					    	let d = value.date;
+							if(d){
+								d = new Date(d);
+								d.toLocaleDateString("en-US", options)
+							}
+					    	tab.push({...value, key: key, date: d})
 						}
 						console.log('tabb tab', tab)
 						setOrdonnances(tab);

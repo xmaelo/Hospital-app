@@ -25,10 +25,10 @@ function LoginScreen ({ navigation }){
     }
     async function signInWithPhoneNumber(){
         try{   
-            if(!username){
+            if(!username || username.trim()==="" ||!password || password.trim()===""){
                 const message = {
                 message: "Erreur",
-                description: "Entrez correctement votre numero de telephone !",
+                description: "Entrez correctement vos informations !",
                 icon: { icon: "auto", position: "left" },
                 type: 'danger',
                 hideStatusBar: false,
