@@ -296,7 +296,7 @@ export default function PatientDataScreen({navigation, route}){
 					          <ListItem.Title>{item.title}</ListItem.Title>
 					        </ListItem.Content>
 					        <View style={styles.row}>
-					        	<Badge value={item.length || 3} status="primary" />
+					        	{/*<Badge value={item.length || 3} status="primary" />*/}
 					        	<Ionicons
 					        		name="chevron-forward"
 					        		size={20}

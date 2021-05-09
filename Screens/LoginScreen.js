@@ -1,5 +1,5 @@
-import React, { useState }from 'react';
-import { View, StyleSheet, SafeAreaView, Image, StatusBar, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect }from 'react';
+import { BackHandler, View, StyleSheet, SafeAreaView, Image, StatusBar, ScrollView, TouchableOpacity } from 'react-native';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -17,25 +17,31 @@ function LoginScreen ({ navigation }){
     const [username, defineUsername] = useState("");
     const [disabled, setDisabled] = useState(false);
 
+    useEffect(() => {
+      BackHandler.addEventListener('hardwareBackPress', () => true)
+      return () => BackHandler.removeEventListener('hardwareBackPress', () => true)
+    }, [])
+
     const pressed = (text) =>{
         console.log('Text pressed');
     }
     const handlePress = () =>{
         console.log('Pressed')
     }
+
     async function signInWithPhoneNumber(){
         try{   
             if(!username || username.trim()==="" ||!password || password.trim()===""){
                 const message = {
-                message: "Erreur",
-                description: "Entrez correctement vos informations !",
+                message: "Info !",
+                description: "Vous n'avez pas entré vos identifiants !",
                 icon: { icon: "auto", position: "left" },
-                type: 'danger',
+                type: 'info',
                 hideStatusBar: false,
                 onPress: () => {
                   hideMessage();
                 },
-            };
+            }; 
 
             showMessage(message);
             return;
@@ -43,7 +49,6 @@ function LoginScreen ({ navigation }){
             setDisabled(true)
             const confirmation = await auth().signInWithEmailAndPassword(username, password);
             auth().currentUser.getIdTokenResult().then((idTokenResult) => {
-                console.log('idTokenResult idTokenResult', idTokenResult)
                 if (!!idTokenResult.claims.doctor) {
                     navigation.navigate('TabBarMed');
                 }else if(!idTokenResult.claims.doctor && !idTokenResult.claims.admin) {
@@ -60,8 +65,8 @@ function LoginScreen ({ navigation }){
             setDisabled(false)
             console.log('error signin', e);
             const message = {
-                message: "Erreur",
-                description: "Quelque chose a mal tourné !",
+                message: "Problème de connexion !",
+                description: "Identifiants incorrects où erreur lié au réseau",
                 icon: { icon: "auto", position: "left" },
                 type: 'danger',
                 hideStatusBar: false,
@@ -95,7 +100,7 @@ function LoginScreen ({ navigation }){
                 <View style={{marginLeft: -10}}>
                     <View style={{marginTop: hp("3%")}}>
                         <Input
-                           placeholder="Username"
+                           placeholder="Email"
                            label="Email"
                            labelStyle={{color: "red"}}
                            leftIcon={
@@ -109,7 +114,7 @@ function LoginScreen ({ navigation }){
                           />
 
                           <Input
-                           placeholder="Password"
+                           placeholder="Mot de passe"
                            label="Password"
                            labelStyle={{color: "red"}}
                            leftIcon={
@@ -166,7 +171,7 @@ function LoginScreen ({ navigation }){
                 </View>
                 <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: hp('3.7%')}}>
                     <TouchableOpacity
-                       onPress={()=>navigation.navigate("AuthScreen")}
+                       //onPress={()=>navigation.navigate("AuthScreen")}
                     >
                         <Text style={styles.slogan}>
                           Forgot password ?
@@ -187,7 +192,7 @@ function LoginScreen ({ navigation }){
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: hp('6%'),
+        marginTop: hp('3%'),
         
         paddingHorizontal: wp("6%"),
     },

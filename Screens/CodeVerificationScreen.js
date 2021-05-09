@@ -1,5 +1,5 @@
 import React, { useState, useEffect }from 'react';
-import { ActivityIndicator, View, Text, StyleSheet, SafeAreaView, Image, KeyboardAvoidingView,ScrollView, StatusBar, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, View, Text, StyleSheet, BackHandler, SafeAreaView, Image, KeyboardAvoidingView,ScrollView, StatusBar, TouchableOpacity } from 'react-native';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import CodeInput from 'react-native-code-input';
 import auth from '@react-native-firebase/auth';
@@ -19,7 +19,12 @@ function CodeVerificationScreen({route, navigation}){
 			console.log('route.params.phone', route.params.phone);
 			await verifyPhoneNumber(route.params.phone);	
 	    })()
+      BackHandler.addEventListener('hardwareBackPress', () => true)
+      return () => BackHandler.removeEventListener('hardwareBackPress', () => true)
+
 	  }, []);
+
+
 
 	async function _onFinishCheckingCode2(code){
 		console.log('code', code);

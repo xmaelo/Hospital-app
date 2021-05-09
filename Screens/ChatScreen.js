@@ -20,7 +20,10 @@ import database from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
 import AttachmentIcon from 'react-native-vector-icons/Entypo'
 import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
-
+ 
+const fullWidth = Dimensions.get('window').width
+const fullHeight = Dimensions.get('window').height
+const _keyExtractor = (item, index) => index.toString()
 export default function ChatScreen({navigation, route}){
 	const [chatUser, setUsers] = useState({});
 
@@ -186,7 +189,8 @@ export default function ChatScreen({navigation, route}){
 		    	let user2 = database().ref('users/'+docId);
 			    user2.update({
 					last_seen: new Date().getTime()
-				})
+				});
+      			database().ref('messages/'+docId+"/"+route.params.userId).off();
 				console.log('è___________returns')
 			  }
 		  }, []);
@@ -196,53 +200,47 @@ export default function ChatScreen({navigation, route}){
 
 	return(
 		<TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-         <View style={styles.container}>
-		        <FlatList
+			<View style={styles.container}>
+				<FlatList
 		          style={{ backgroundColor: '#f2f2ff' }}
 		          inverted={true}
+		          keyExtractor={_keyExtractor}
 		          data={JSON.parse(JSON.stringify(messages))}
-		          renderItem={({ item }) => (
-		            <TouchableWithoutFeedback>
-		              <View style={{ marginTop: 6 }}>
-		                <View
-		                  style={{
-		                    maxWidth: Dimensions.get('screen').width * 0.8,
-		                    backgroundColor: '#3a6ee8',
-		                    alignSelf:
-		                      item.senderId === chatUser.docId
-		                        ? 'flex-end'
-		                        : 'flex-start',
-		                    marginHorizontal: 10,
-		                    padding: 10,
-		                    borderRadius: 8,
-		                    borderBottomLeftRadius:
-		                      item.senderId === chatUser.docId ? 8 : 0,
-		                    borderBottomRightRadius:
-		                      item.senderId === chatUser.docId ? 0 : 8,
-		                  }}
-		                >
-		                  <Text
-		                    style={{
-		                      color: '#fff',
-		                      fontSize: 16,
-		                    }}
-		                  >
-		                    {item.message}
-		                  </Text>
-		                  <Text
-		                    style={{
-		                      color: '#dfe4ea',
-		                      fontSize: 14,
-		                      alignSelf: 'flex-end',
-		                    }}
-		                  > 
-		                    {item.time}
-		                  </Text>
-		                </View>
-		              </View>
-		            </TouchableWithoutFeedback>
-		          )}
-		        />
+		          renderItem={({ item }) => (	
+		            <View>	
+				 		{item.senderId !== chatUser.docId ?
+				          (
+				            <View style={[styles.container2, styles.positionToLeft]}>
+				              <View style={[styles.message, styles.messageToLeft]}>
+				                <Text style={[styles.messageText, (item.senderId === chatUser.docId ? styles.selfToLeft : styles.selfToRight)]}>
+				                  {item.message || ' '}
+				                </Text>
+				                <Text style={styles.dateSent}>
+				                  {item.time}
+				                </Text>
+				              </View>
+				            </View>
+				          ) :
+				          ( 
+				            <View style={[styles.container2, styles.positionToRight]}>
+				              <View style={[styles.message, styles.messageToRight]}>
+				                <Text style={[styles.messageText, styles.selfToRight]}>
+				                  {item.message || ' '}
+				                </Text>
+				                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
+				                  <Text style={styles.dateSent}>
+				                    {item.time}
+				                  </Text>
+				                  <Icon name="done-all" size={12} color="#ffeb3b" />
+				                </View>
+				              </View>
+				            </View>
+				          )
+			            }
+			        </View>
+		           )}
+		    	/>
+		        
 		        <View style={styles.container1}>
 		          <View style={styles.inputContainer}>
 		            <AutoGrowingTextInput
@@ -263,7 +261,7 @@ export default function ChatScreen({navigation, route}){
 		            <Icon name="send" size={32} color="blue" onPress={() => sendMessage()} />
 		          </TouchableOpacity>
 		        </View>
-          </View>
+            </View>
         </TouchableWithoutFeedback>
 	)
 }
@@ -341,4 +339,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     justifyContent: 'center',
   },
+  container2: {
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  positionToLeft: {
+    justifyContent: 'flex-start'
+  },
+  positionToRight: {
+    justifyContent: 'flex-end'
+  },
+  message: {
+    paddingTop: 5,
+    paddingBottom: 3,
+    paddingHorizontal: 6,
+    borderRadius: 10
+  },
+  messageToLeft: {
+    maxWidth: fullWidth - 90,
+    borderBottomLeftRadius: 2,
+    backgroundColor: '#63D9C6'
+  },
+  messageToRight: {
+    maxWidth: fullWidth - 55,
+    borderBottomRightRadius: 2,
+    backgroundColor: '#48A6E3'
+  },
+  messageText: {
+    fontSize: 16,
+    color: 'white'
+  },
+  selfToLeft: {
+    alignSelf: 'flex-start'
+  },
+  selfToRight: {
+    alignSelf: 'flex-end'
+  },
+  dateSent: {
+    alignSelf: 'flex-end',
+    paddingTop: 1,
+    paddingHorizontal: 3,
+    fontSize: 12,
+    color: 'lightcyan'
+  }
 });

@@ -10,12 +10,12 @@ import { showMessage, hideMessage } from "react-native-flash-message";
 import storage from '@react-native-firebase/storage';
 
 const img = require('../../assets/imgs/logo.png')
-
+ 
 
 
 function RegisterScreen ({ navigation }){
     const [initializing, setInitializing] = useState(true);
-    const [password, setPassword] = useState("");
+    const [password, setPassword] = useState(null);
     const [name, defineName] = useState("");
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
@@ -45,7 +45,7 @@ function RegisterScreen ({ navigation }){
     if (phone&&phone.slice(0, 1)!=="+") {
       const sc = {
         message: "Attention !",
-        description: "Le numéro de téléphone est au format international ex: +237xxxxxx",
+        description: "Le numéro de téléphone est au format international ex: +237xxxxxxxxx",
         icon: { icon: "auto", position: "left" },
         type: 'info',
         onPress: () => {
@@ -58,12 +58,43 @@ function RegisterScreen ({ navigation }){
       console.log('incorresct phone');
     }
 
+    if(!name || name && name.length === 0){
+      const message = {
+        message: "Info !",
+        description: "Veuillez remplir d'abord le formulaire",
+        icon: { icon: "auto", position: "left" },
+        type: 'info',
+        onPress: () => {
+          hideMessage();
+        },
+      };
+
+     showMessage(message);
+
+      return;
+    }
+
     if(passwordCheck !== password){
       const message = {
-        message: "Erreur fatale",
-        description: "Les mots de passe ne correspondents pas !",
+        message: "Info !",
+        description: "Les mots de passe ne correspondent pas !",
         icon: { icon: "auto", position: "left" },
-        type: 'danger',
+        type: 'info',
+        onPress: () => {
+          hideMessage();
+        },
+      };
+
+     showMessage(message);
+
+      return;
+    }
+    if(password && password.length < 6){
+      const message = {
+        message: "Info !",
+        description: "Le mot de passe doit être de 6 carractères au minimum",
+        icon: { icon: "auto", position: "left" },
+        type: 'info',
         onPress: () => {
           hideMessage();
         },
@@ -80,23 +111,12 @@ function RegisterScreen ({ navigation }){
         password
       );
      const userId = auth().currentUser.uid;
-
-      // const { userId } = await admin.auth().createUser({
-      //      displayName,
-      //      password,
-      //      email
-      //  })
-      //await admin.auth().setCustomUserClaims(userId, { doctor: true })
-
-      console.log('User account created & signed in!');
-
-        
-
       database().ref('users').child(userId).set({
         phone: phone,
         email: email,
-        profile: "https://randomuser.me/api/portraits/women/11.jpg",
-        nom_complet : name
+        profile: "https://firebasestorage.googleapis.com/v0/b/mamed-7686b.appspot.com/o/images%2Favatar.jpg?alt=media",
+        nom_complet : name,
+        non_activate: true,
       }).then((data) => {
           console.log('Saved Data', data)
       })

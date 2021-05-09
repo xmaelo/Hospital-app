@@ -48,12 +48,12 @@ export default function AddRendezVous({navigation, route}){
 		let  userId = userId = route.params?.userId;
 		userId = userId ? userId : auth().currentUser.uid;
     	let type, message, description;
-    	if((title&&title.trim()==="" || subtitle&&subtitle.trim()===""  || !start || !end)){
+    	if((title&&title.trim()==="" || subtitle&&subtitle.trim()===""  || !start)){
 			const message = {
-	            message: "Erreur",
-	            description: "Tous les champs n'ont pas été fourni !",
+	            message: "Info",
+	            description: "Tous les champs n'ont pas été rempli !",
 	            icon: { icon: "auto", position: "left" },
-	            type: 'danger',
+	            type: 'info',
 	            hideStatusBar: false,
 	            onPress: () => {
 	              hideMessage();
@@ -75,7 +75,7 @@ export default function AddRendezVous({navigation, route}){
 		}catch(e){
 			message = "Error";
     		type =  'danger';
-    		description="Erreur inconnue est apparue !"
+    		description="Problème lors de la sauvegarde !"
 			console.log('error saving on firebase');
 		}
 		const mess = {
@@ -166,12 +166,12 @@ export default function AddRendezVous({navigation, route}){
 							buttonStyle={{paddingHorizontal: 20, backgroundColor: "#F0F0F0"}}
 							titleStyle={{color: "black"}}
 							iconRight
-							title="Début      "
+							title="Date      "
 							onPress={()=>setDatePickerVisibility1(true)}
 						/>
 						<DateTimePickerModal
 					        isVisible={isDatePickerVisible1}
-					        mode="datetime"
+					        mode="date"
 					        onConfirm={handleConfirm1}
 					        onCancel={hideDatePicker1}
 					      />
@@ -188,6 +188,7 @@ export default function AddRendezVous({navigation, route}){
 						</Text>
 					</View>
 				</View>
+				{/*
 				<View style={{height: 20}}/>
 				<View style={{...styles.row, ...styles.content3}}>
 					<View style={{ ...styles.row, ...styles.content2, width: wp('45%')}}>
@@ -229,7 +230,8 @@ export default function AddRendezVous({navigation, route}){
 							+end.getFullYear()+" à "+ end.getHours()+" h "+end.getMinutes(): null}
 						</Text>
 					</View>
-				</View>  
+				</View> 
+				*/} 
 			</View>
 
 			<View style={{height: 30}}/>

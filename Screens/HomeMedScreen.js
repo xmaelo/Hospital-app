@@ -16,13 +16,15 @@ import Init from '../video/Init';
 
 const img = require('../../assets/imgs/logo.png')
 
-
+ 
 const docId = "QY7P52WSS6UmEFX6Dmc0qhDSG232"; 
 
 export default function HomeMedScreen(props){
 	const [users, setUsers] = useState([]);
 	const [doc, setDoc] = useState({});
 	const [pat, setPat] = useState([]);
+	const [numRen, setNumRen] = useState(0)
+	const [numRenAu, setNumRenAu] = useState(0)
     const [filteredUsers, setFilteredUsers] = useState([]);
 
     const onLogout = () =>
@@ -58,7 +60,6 @@ export default function HomeMedScreen(props){
 		});
 	      let users1 = database().ref('users/'+user.uid);
 	      let users2 = database().ref('users/'+user.uid);
-	      console.log('//////////////////////////////////')
 	      users2.update({last_seen: 'online'});
 	      users1.once('value', snatchot =>{
 	        let callId = snatchot.val().callId;
@@ -79,7 +80,18 @@ export default function HomeMedScreen(props){
 			      	});
 					setPat(xc);
 				}
-			});
+			}); 
+
+	        let rendezVous = database().ref('rendezVous/'+docId);
+		        rendezVous.on('value', (snapshot) => { 
+		        if(snapshot.val()){
+		           let rendez = {};
+		           let dayR = Object.values(snapshot.val()).filter((ren, id)=>new Date(ren.start).toISOString().split('T')[0] === new Date().toISOString().split('T')[0])
+		           let pro = Object.values(snapshot.val()).filter((ren, id)=>new Date(ren.start).getTime() > new Date().getTime())
+		           setNumRenAu(dayR.length);
+		           setNumRen(pro.length);
+	        }})
+
 	      const onRegister = async (token)  =>{
 	        console.log('[App] onRegister: ', token);
 	        users2.update({token: token});
@@ -143,8 +155,8 @@ export default function HomeMedScreen(props){
 						       </View>
 
 						       <View style={{...styles.col, alignItems: "center"}}>
-						       		<Text  style={{color: "#4793CC", fontSize: 17, ...styles.paddingTop}}>1</Text>
-						       		<Text  style={{color: "#4793CC", fontSize: 17}}>1</Text>
+						       		<Text  style={{color: "#4793CC", fontSize: 17, ...styles.paddingTop}}>{numRenAu}</Text>
+						       		<Text  style={{color: "#4793CC", fontSize: 17}}>{numRen}</Text>
 						       </View>
 						       <View style={{...styles.col, alignItems: "center"}}>
 						       		<Ionicons style={styles.paddingTop} name="eye" size={20} color="#4793CC"/>
@@ -155,6 +167,7 @@ export default function HomeMedScreen(props){
 						    	<Button
 								  title={" Voir le calendrier"}
 								  type="outline"
+								  onPress={()=>props.navigation.navigate("RendezVousScreen")}
 								  buttonStyle={{width: 200}}
 								  icon={<Ionicons name="calendar" size={20} color="#4793CC"/>}
 								/>
@@ -212,9 +225,15 @@ export default function HomeMedScreen(props){
 		                	</TouchableOpacity>
 	                	</View>
 	                	<View style={{...styles.row, justifyContent: 'space-between', marginTop: 20}}>
-	                		<View>
-		                		<View style={styles.rondView} >
+	                		<View style={styles.center}>
+		                		<View style={{...styles.center, ...styles.rondView}} >
+		                			<Ionicons
+		                			 name='settings-outline'
+		                			 size={30} 
+		                			 color="#4793CC"
+		                			/>
 		                		</View>
+		                		<Text style={styles.slogan}>Paramètres</Text>
 	                		</View>
 	                		<View style={styles.center}>
 		                		<View style={{...styles.center, ...styles.rondView}} >
@@ -226,13 +245,15 @@ export default function HomeMedScreen(props){
 		                		</View>
 		                		<Text style={styles.slogan}>Facturation</Text>
 	                		</View>
-	                		<View>
-		                		<View style={styles.rondView} >
+	                		<View style={styles.center}>
+		                		<View style={{...styles.center, ...styles.rondView}} >
+		                			<Ionicons
+		                			 name='help-circle-outline'
+		                			 size={30} 
+		                			 color="#4793CC"
+		                			/>
 		                		</View>
-	                		</View>
-	                		<View>
-		                		<View style={styles.rondView} >
-		                		</View>
+		                		<Text style={styles.slogan}>Aide</Text>
 	                		</View>
 	                		
 	                	</View>
